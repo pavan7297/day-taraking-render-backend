@@ -1,14 +1,11 @@
-# Start with an official OpenJDK image as a base
-FROM openjdk:17-jdk-slim
-
-# Set the working directory in the container
+# Build stage
+FROM maven:3.8.5-openjdk-17 AS build
+COPY . /app
 WORKDIR /app
+RUN mvn clean package -DskipTests
 
-# Copy the built JAR file to the container
-COPY target/*.jar daytrack.jar
-
-# Expose the port that your Spring Boot app runs on
+# Final stage
+FROM openjdk:17-jdk-alpine
+COPY --from=build /app/target/daytracking-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8080
-
-# Run the JAR file
-ENTRYPOINT ["java", "-jar", "daytrack.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
